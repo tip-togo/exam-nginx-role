@@ -1,2 +1,33 @@
 ---
 # tasks file for nginx-role
+
+- name: Install docker
+  include_role:
+    name: docker
+
+- name: Pull nginx image
+  docker_image:
+    name: nginx:stable-alpine
+
+- name: Create nginx config volume
+  docker_volume:
+    name: "{{ docker_vol }}"
+
+- name: Create nginx container
+  docker_container:
+    name: "{{ docker_name }}"
+    hostname: "{{ docker_name }}"
+    ports:
+      "{{ docker_nginx_port }}:80"
+    volumes:
+      "{{ docker_vol }}:/etc/nginx/"
+    image: nginx:alpine
+    state: present
+
+- include: config.yml
+
+- name: Start/restart nginx container.
+  docker_container:
+    name: "{{ docker_name }}"
+    state: started
+    restart: yes
